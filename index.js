@@ -1,21 +1,26 @@
-import connectDB from "./dbConnection/Connection.js";
-import usersRouter from "./routes/UserRoutes.js";
-import Express from "express";
+import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import connectDB from "./dbConnection/Connection.js";
+import usersRouter from "./routes/UserRoutes.js";
+import webhookRouter from "./routes/GatewayRoutes.js";
+import PizzaRouter from "./routes/PizzaRoutes.js";
 import { connectRedis } from "./controllers/redisClient.js";
-import router from "./routes/GatewayRoutes.js";
+import orderRouter from "./routes/order.js";
+import { handleStripeWebhook } from "./controllers/Gateway.js";
 
 dotenv.config();
-// const stripe = new Stripe(process.env.STRIPE_PAYMENT);
 
-const app = Express();
+const app = express();
 
-app.use(Express.json());
+app.use(express.json());
 app.use(cors());
-app.use(usersRouter);
-app.use(router)
 
+app.post("/webhook", express.raw({ type: "application/json" }), handleStripeWebhook);
+
+app.use(usersRouter);
+app.use(PizzaRouter);
+app.use(orderRouter)
 
 const startServer = async () => {
   try {
@@ -31,7 +36,7 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error("Failed to start server:", error);
-    process.exit(); 
+    process.exit(1);
   }
 };
 

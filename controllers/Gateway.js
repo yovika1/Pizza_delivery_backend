@@ -1,70 +1,34 @@
 import stripe from "../config/stripe.js";
-
+import { Order } from "../schema/Order.js";
 export const createCheckout = async (req, res) => {
   const { orderId, amount } = req.body;
-  console.log("req body", req.body)
+  console.log("req body", req.body);
+};
 
-  const convertUsdToInr = (amountInDollars, usdToInrRate = 83) =>{
-    return Math.round( amountInDollars * usdToInrRate *100); 
-
-  };
-
+export const handleStripeWebhook = async (request, response) => {
+  const stringifyData = request?.body;
+  const data = stringifyData;
+  const paymentId = data?.data?.object?.id;
   try {
-    if(!amount || !orderId) {
-      return res.status(400) . json({
-        message:'order ID and amount are required'
-      })
-    }
-const amountInPaise  = convertUsdToInr(amount);
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [
+    if (data.type === "payment_intent.succeeded") {
+      console.log("💰 Payment captured!");
+      await Order.findOneAndUpdate(
         {
-          price_data: {
-            currency: "inr",
-            product_data: {
-              name: `Order #${orderId}`,
-            },
-            unit_amount: amountInPaise,
-          },
-          quantity: 1,
+          paymentId: paymentId,
         },
-      ],
-      mode: "payment",
-      success_url: "http://localhost:3000/success",
-      cancel_url: "http://localhost:3000/cancel",
-    });
-
-    res.json({ url: session.url});
-  } catch (error) {
-    console.error("Error creating Stripe session:", error.message);
-    res.status(500).send("Internal Server Error");
-  }
-};
-
-export const handleStripeWebhook = async (req, res) => {
-  const payload = req.body;
-  const sig = req.headers["stripe-signature"];
-
-  try {
-    const event = stripe.webhooks.constructEvent(
-      payload,
-      sig,
-      "your-webhook-secret"
-    );
-
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
-
-      // Example: Update order status in your database
-      console.log(`Payment successful for session: ${session.id}`);
+        {
+          status: "paid",
+        },
+        { new: true }
+      );
+      // await updateOrder(orderId, "success");
+    } else if (data.type === "payment_intent.payment_failed") {
+      console.log("❌ Payment failed.");
+      // await updateOrder(orderId, "failed");
     }
-
-    res.json({ received: true });
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err.message);
-    res.status(400).send(`Webhook Error: ${err.message}`);
+    response.send();
+  } catch (error) {
+    console.log("catch message ", error.message);
+    // await updateOrder(new mongoose.Types.ObjectId(orderId), "failed");
   }
 };
-

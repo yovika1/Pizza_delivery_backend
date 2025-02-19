@@ -1,12 +1,28 @@
-import mongoose, { Types } from "mongoose";
+import mongoose from "mongoose";
 
-const paymentSchema = new mongoose.Schema({
 
-    amount:{
-        Types:Number
+const Paymentschema = mongoose.Schema({
+    intentId:{
+        type: String
+    },
+    paymentStatus: {
+        type: String,
+        enum: ["pending", "success", "rejected"],
+        default:"pending"
+    },
+    customer_id: {
+        type:String
+    },
+    order_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Order'
+    },
+    amount : {
+        type:String
     }
     
 
-},{timestamps:true})
+}, {    timestamps: true
+})
 
-export const GatewayPayment =  mongoose("GatewayPayment",paymentSchema)
+  export const Payemnt = mongoose.model('Payment',Paymentschema);

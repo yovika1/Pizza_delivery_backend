@@ -1,15 +1,9 @@
 import express from 'express';
-import { createCheckout, handleStripeWebhook } from '../controllers/Gateway.js';
+import { createCheckout } from '../controllers/Gateway.js';
 
-const router = express.Router();
+const webhookRouter = express.Router();
 
-router.post('/create-checkout-session',createCheckout);
+webhookRouter.post('/create-checkout-session',createCheckout);
 
-router.post(
-    "webhook",
-    express.raw({
-        type:'application/json'
-    }),
-    handleStripeWebhook
-)
-export default router;
+
+export default webhookRouter;
