@@ -12,6 +12,14 @@ const PizzaSchema = new mongoose.Schema({
         type:String,
         require:true
     },
+    requirment:[{
+        id : {
+            type:String,
+        },
+        qunatity:{
+            type: Number,
+        }
+    }],
     price: { 
         type: Number,
          required: true

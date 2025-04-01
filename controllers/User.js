@@ -1,6 +1,6 @@
 import { User } from "../schema/UserDetails.js";
 import { saveOTP, getOTP } from "./redisClient.js";
-import { sendOtp } from "../controllers/sendOtp.js";
+import { nodeMailer } from "../controllers/NodeMailer.js";
 import jwt from "jsonwebtoken";
 
 // Generate OTP
@@ -13,7 +13,7 @@ export const LoginOtp = async (req, res) => {
 
   if (!Email) {
     return res
-      .status(200)
+      .status(400)
       .json({ message: "Email is required", status: false });
   }
 
@@ -21,7 +21,7 @@ export const LoginOtp = async (req, res) => {
     const otp = generateOTP();
     await saveOTP(Email, otp.toString());
 
-    sendOtp(otp, Email);
+    nodeMailer(otp, Email);
 
     return res.status(200).json({
       message: "OTP sent successfully. Check your email.",
@@ -66,7 +66,7 @@ export const verifyOtp = async (req, res) => {
             Email
           })
           const token = jwt.sign(
-            { email: user.Email, id: user._id },
+            { email: User.Email, id: User._id },
             process.env.JWT_SECRET,
             { expiresIn: "1h" } 
           );

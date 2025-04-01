@@ -1,7 +1,6 @@
 import express from 'express';
 import { createPizza, deletePizza, getAll, updatedPizza } from '../controllers/Pizza.js';
 
-
 const pizzaRouter = express.Router()
 
 pizzaRouter.post('/create', createPizza);
