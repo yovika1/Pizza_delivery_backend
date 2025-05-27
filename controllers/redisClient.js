@@ -1,10 +1,7 @@
 import { createClient } from "redis";
 
 const client = createClient({
-  socket: {
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-  },
+  url: process.env.REDIS_URL,
 });
 
 client.on("error", (err) => console.error("Redis Error:", err));
