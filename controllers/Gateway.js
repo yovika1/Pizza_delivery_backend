@@ -1,7 +1,6 @@
 import stripe from "../config/stripe.js";
 import { Order } from "../schema/Order.js";
 export const createCheckout = async (req, res) => {
-  const { orderId, amount } = req.body;
   console.log("req body", req.body);
 };
 
